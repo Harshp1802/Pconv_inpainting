@@ -5,7 +5,7 @@ import torch.nn as nn
 
 
 class PConv(nn.Module):
-    def __init__(self, input_channels, output_channels, kernel_size = (3, 3), stride = (1, 1), dilation = 1, padding = 0, bias = True):
+    def __init__(self, input_channels, output_channels, kernel_size = (3, 3), stride = (1, 1), dilation = 1, padding = 0, bias = True, pooling_dim = 1, activ = 'relu', bn = True):
         super().__init__()
         
         # Create a 2D convolutional layer for the images of the partial convolution.
@@ -22,6 +22,18 @@ class PConv(nn.Module):
         # We don't want the masks to get updated through gradients since that is what we will do manually
         for param in self.mask_convolution.parameters():
             param.requires_grad = False
+
+        self.pool = nn.MaxPool2d(kernel_size = pooling_dim)
+        
+        if activ == 'relu':
+            self.activ = nn.ReLU()
+        elif activ == 'leaky':
+            self.activ = nn.LeakyReLU(negative_slope=0.2)
+
+        if bn == True:
+            self.bn = nn.BatchNorm2d(output_channels)
+        else:
+            self.bn = None
 
     def forward(self, image, mask):
 
@@ -47,5 +59,14 @@ class PConv(nn.Module):
         # Now the new mask will be generated using the no_update_holes
         new_mask = (torch.ones_like(output)).masked_fill_(no_update_holes, 0.0)
 
+        # We apply max pooling, since that is a part of UNet
+        pool_output = self.pool(output)
+        
+        # We apply batch normalisation, 
+        if self.bn:
+            pool_output = self.bn(pool_output)
+
+        # We apply activation function (ReLu or Leaky)
+        output = self.activ(pool_output)
         # The output, along with the updated mask, goes on to the next layer
         return output, new_mask
