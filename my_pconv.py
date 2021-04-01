@@ -5,7 +5,7 @@ import torch.nn as nn
 
 
 class PConv(nn.Module):
-    def __init__(self, input_channels, output_channels, kernel_size = (3, 3), stride = (1, 1), dilation = 1, padding = 0, pooling_dim = 1, bias = True, activ = 'relu', bn = True):
+    def __init__(self, input_channels, output_channels, kernel_size = (3, 3), stride = (1, 1), padding = 0, dilation = 1, bias = True, activ = 'relu', bn = True):
         super().__init__()
         
         # Create a 2D convolutional layer for the images of the partial convolution.
@@ -24,7 +24,7 @@ class PConv(nn.Module):
             param.requires_grad = False
 
         # We use Maxpool 2x2 for getting a low rank image 
-        self.pool = nn.MaxPool2d(kernel_size = pooling_dim)
+        #self.pool = nn.MaxPool2d(kernel_size = pooling_dim)
         
         # Defining activation functions
         if activ == 'relu':
