@@ -42,10 +42,10 @@ class PConv(nn.Module):
         mask_normaliser = output_mask.masked_fill_(no_update_holes, 1.0)
 
         # Since we are using Partial Convolutions, normalising the mask only over the no-update region is necessary
-        output = ((output - output_bias) / mask_normaliser + output_bias).masked_fill_(no_update_holes, 0.0)
+        output = ((output - bias) / mask_normaliser + bias).masked_fill_(no_update_holes, 0.0)
 
         # Now the new mask will be generated using the no_update_holes
-        new_mask = (torch.ones_like(output)).masked_fill_(no_update_holes)
+        new_mask = (torch.ones_like(output)).masked_fill_(no_update_holes, 0.0)
 
         # The output, along with the updated mask, goes on to the next layer
         return output, new_mask
