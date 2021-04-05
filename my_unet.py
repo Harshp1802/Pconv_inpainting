@@ -39,14 +39,14 @@ class PConvUNet(nn.Module):
         self.dec_inter = nn.ModuleList()
         
         # Creating a list of all decoders
-        self.enc_prim.append(PConv(64 + input_channels, 64, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_inter.append(PConv(64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc__prim.append(PConv(128 + 64, 128, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_inter.append(PConv(128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_prim.append(PConv(256 + 128, 256, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_inter.append(PConv(256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_prim.append(PConv(512 + 256, 512, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_prim.append(PConv(64 + input_channels, input_channels, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_inter.append(PConv(input_channels, input_channels, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_prim.append(PConv(128 + 64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_inter.append(PConv(64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_prim.append(PConv(256 + 128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_inter.append(PConv(128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_prim.append(PConv(512 + 256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_inter.append(PConv(256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
 
 
         for i in range(5, num_layers + 1):
@@ -63,13 +63,16 @@ class PConvUNet(nn.Module):
 
         h_key_prev = 0
         for i in range(1, self.num_layers + 1):
-            operator = nn.Sequential(
-                self.enc_prim[i],
-                self.enc_inter[i],
-                nn.MaxPool2d(2)
-            )
-            h_dict[i], h_mask_dict[i] = operator(
-                h_dict[h_key_prev], h_mask_dict[h_key_prev])
+            #operator = nn.Sequential(
+                #self.enc_prim[i-1],
+                #self.enc_inter[i-1]
+            #)
+            pool = nn.MaxPool2d(2)
+            x, y = self.enc_prim[i-1](h_dict[h_key_prev], h_mask_dict[h_key_prev])
+            h_dict[i], h_mask_dict[i] = self.enc_inter[i-1](x, y)
+            # h_dict[i], h_mask_dict[i] = operator(h_dict[h_key_prev], h_mask_dict[h_key_prev])
+            h_dict[i] = pool(h_dict[i])
+            h_mask_dict[i] = pool(h_mask_dict[i])
             h_key_prev = i
 
         h_key = self.num_layers
@@ -80,7 +83,7 @@ class PConvUNet(nn.Module):
         #                            input         dec_2            dec_1
         #                            h_enc_7       h_enc_8          dec_8
 
-        for i in range(self.num_layers - 1):
+        for i in range(self.num_layers, 0, -1):
             enc_h_key = i - 1
             dec_l_key = i
 
@@ -88,17 +91,24 @@ class PConvUNet(nn.Module):
             # We upsample the mask using the nearest mode
             h = F.interpolate(h, scale_factor=2, mode=self.upsampling_mode)
             h_mask = F.interpolate(
-                h_mask, scale_factor=2, mode='nearest')
+                h_mask, scale_factor=2, mode='bilinear')
+            #print ("-------", i, h.shape, h_dict[enc_h_key].shape)
 
             h = torch.cat([h, h_dict[enc_h_key]], dim=1)
             h_mask = torch.cat([h_mask, h_mask_dict[enc_h_key]], dim=1)
 
-            operator = nn.Sequential(
-                self.dec_prim[i],
-                self.dec_inter[i],
-                nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)
-            )
-            h, h_mask = operator(h, h_mask)
+            #operator = nn.Sequential(
+                #self.dec_prim[i],
+                #self.dec_inter[i],
+                #nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)
+            #)
+            x, y = self.dec_prim[i - 1](h, h_mask)
+            h,h_mask = self.dec_inter[i - 1](x, y)
+            #h = nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)(h)
+            #h_mask = nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)(h_mask)
+
+            #h, h_mask = operator(h, h_mask)
+
 
         return h, h_mask
 

@@ -17,7 +17,7 @@ class PConv(nn.Module):
         # Create a 2D convolutional layer for the masks of the partial convolution.
         self.mask_convolution = nn.Conv2d(input_channels, output_channels, kernel_size, stride, padding, dilation, bias = False)
         # Initialise Constant Weights of value for Mask_Convolution Kernel
-        torch.nn.init.constant_(self.mask_convolution, 1.0)
+        torch.nn.init.constant_(self.mask_convolution.weight, 1.0)
 
         # We don't want the masks to get updated through gradients since that is what we will do manually
         for param in self.mask_convolution.parameters():
