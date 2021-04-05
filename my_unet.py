@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 from my_pconv import PConv
+import torch.nn.functional as F
 
 # Important formulae
 # 1) Padding should be n for kernel size of 2 * n + 1 (This is for dimension conservation)
@@ -69,7 +70,7 @@ class PConvUNet(nn.Module):
             )
             h_dict[i], h_mask_dict[i] = operator(
                 h_dict[h_key_prev], h_mask_dict[h_key_prev])
-            h_key_prev = h_key
+            h_key_prev = i
 
         h_key = self.num_layers
         h, h_mask = h_dict[h_key], h_mask_dict[h_key]
