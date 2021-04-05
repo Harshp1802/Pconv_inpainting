@@ -10,7 +10,8 @@ from tqdm import tqdm
 import opt
 from evaluation import evaluate
 from loss import InpaintingLoss
-from net import PConvUNet
+from my_unet import PConvUNet
+#from net import PConvUNet
 from net import VGG16FeatureExtractor
 from places2 import Places2
 from util.io import load_ckpt
@@ -49,10 +50,10 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--lr_finetune', type=float, default=5e-5)
     parser.add_argument('--max_iter', type=int, default=10000)
-    parser.add_argument('--batch_size', type=int, default=6)
+    parser.add_argument('--batch_size', type=int, default=3)
     parser.add_argument('--n_threads', type=int, default=16)
     parser.add_argument('--save_model_interval', type=int, default=5000)
-    parser.add_argument('--vis_interval', type=int, default=50)
+    parser.add_argument('--vis_interval', type=int, default=5)
     parser.add_argument('--log_interval', type=int, default=10)
     parser.add_argument('--image_size', type=int, default=256)
     parser.add_argument('--resume', type=str)
@@ -119,6 +120,7 @@ if __name__ == '__main__':
             if (i + 1) % args.log_interval == 0:
                 writer.add_scalar('loss_{:s}'.format(key), value.item(), i + 1)
 
+        print(loss)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
