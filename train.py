@@ -17,7 +17,8 @@ from util.io import load_ckpt
 from util.io import save_ckpt
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
+print(torch.__version__)
+print(torch.version.cuda)
 class InfiniteSampler(data.sampler.Sampler):
     def __init__(self, num_samples):
         self.num_samples = num_samples
@@ -42,17 +43,17 @@ class InfiniteSampler(data.sampler.Sampler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # training options
-    parser.add_argument('--root', type=str, default='./Data')
-    parser.add_argument('--mask_root', type=str, default='./masks')
+    parser.add_argument('--root', type=str, default='../Data')
+    parser.add_argument('--mask_root', type=str, default='../masks')
     parser.add_argument('--save_dir', type=str, default='./snapshots/default')
     parser.add_argument('--log_dir', type=str, default='./logs/default')
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--lr_finetune', type=float, default=5e-5)
     parser.add_argument('--max_iter', type=int, default=10000)
-    parser.add_argument('--batch_size', type=int, default=6)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--n_threads', type=int, default=16)
-    parser.add_argument('--save_model_interval', type=int, default=5000)
-    parser.add_argument('--vis_interval', type=int, default=50)
+    parser.add_argument('--save_model_interval', type=int, default=2000)
+    parser.add_argument('--vis_interval', type=int, default=100)
     parser.add_argument('--log_interval', type=int, default=10)
     parser.add_argument('--image_size', type=int, default=256)
     parser.add_argument('--resume', type=str)
@@ -79,12 +80,12 @@ if __name__ == '__main__':
 
     dataset_train = Places2(args.root, args.mask_root, img_tf, mask_tf, 'train')
     dataset_val = Places2(args.root, args.mask_root, img_tf, mask_tf, 'val')
-
+    print(len(dataset_train))
     iterator_train = iter(data.DataLoader(
         dataset_train, batch_size=args.batch_size,
         sampler=InfiniteSampler(len(dataset_train)),
         num_workers=args.n_threads))
-    print(len(dataset_train))
+    
     model = PConvUNet().to(device)
 
     if args.finetune:
