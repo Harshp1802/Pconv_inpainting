@@ -16,6 +16,7 @@ class PConv(nn.Module):
 
         # Create a 2D convolutional layer for the masks of the partial convolution.
         self.mask_convolution = nn.Conv2d(input_channels, output_channels, kernel_size, stride, padding, dilation, bias = False)
+        
         # Initialise Constant Weights of value for Mask_Convolution Kernel
         torch.nn.init.constant_(self.mask_convolution.weight, 1.0)
 
@@ -31,6 +32,8 @@ class PConv(nn.Module):
             self.activ = nn.ReLU()
         elif activ == 'leaky':
             self.activ = nn.LeakyReLU(negative_slope=0.2)
+        else:
+            self.activ = None
 
         # Defining batch normalization
         if bn == True:
@@ -70,7 +73,8 @@ class PConv(nn.Module):
             output = self.bn(output)
 
         # We apply activation function (ReLu or Leaky)
-        output = self.activ(output)
-        
+        if self.activ:
+            output = self.activ(output)
+
         # The output, along with the updated mask, goes on to the next layer
         return output, new_mask

@@ -21,37 +21,37 @@ class PConvUNet(nn.Module):
         # Creating a list of all encoders
         self.num_layers = num_layers
         self.enc_prim.append(PConv(input_channels, 64, 7, 1, 3, bn=False))
-        self.enc_inter.append(PConv(64, 64, 7, 1, 3, bn=False))
+        # self.enc_inter.append(PConv(64, 64, 7, 1, 3, bn=False))
         self.enc_prim.append(PConv(64, 128, 5, 1, 2, bn=False))
-        self.enc_inter.append(PConv(128, 128, 5, 1, 2, bn=False))
+        # self.enc_inter.append(PConv(128, 128, 5, 1, 2, bn=False))
         self.enc_prim.append(PConv(128, 256, 5, 1, 2, bn=False))
-        self.enc_inter.append(PConv(256, 256, 5, 1, 2, bn=False))
+        # self.enc_inter.append(PConv(256, 256, 5, 1, 2, bn=False))
         self.enc_prim.append(PConv(256, 512, 3, 1, 1, bn=False))
-        self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
+        # self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
 
 
         for i in range(5, num_layers + 1):
             self.enc_prim.append(PConv(512, 512, 3, 1, 1, bn=False))
-            self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
+            # self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
 
         # Creating a list of all decoders
         self.dec_prim = nn.ModuleList()
         self.dec_inter = nn.ModuleList()
         
         # Creating a list of all decoders
-        self.dec_prim.append(PConv(64 + input_channels, input_channels, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_inter.append(PConv(input_channels, input_channels, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_prim.append(PConv(64 + input_channels, input_channels, 3, 1, 1, bn=False, activ = None))
+        # self.dec_inter.append(PConv(input_channels, input_channels, 3, 1, 1, bn=False, activ = None))
         self.dec_prim.append(PConv(128 + 64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_inter.append(PConv(64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
+        # self.dec_inter.append(PConv(64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
         self.dec_prim.append(PConv(256 + 128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_inter.append(PConv(128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
+        # self.dec_inter.append(PConv(128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
         self.dec_prim.append(PConv(512 + 256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_inter.append(PConv(256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
+        # self.dec_inter.append(PConv(256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
 
 
         for i in range(5, num_layers + 1):
             self.dec_prim.append(PConv(512 + 512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
-            self.dec_inter.append(PConv(512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
+            # self.dec_inter.append(PConv(512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
 
     
     def forward(self, image, mask):
@@ -69,7 +69,8 @@ class PConvUNet(nn.Module):
             #)
             pool = nn.MaxPool2d(2)
             x, y = self.enc_prim[i-1](h_dict[h_key_prev], h_mask_dict[h_key_prev])
-            h_dict[i], h_mask_dict[i] = self.enc_inter[i-1](x, y)
+            h_dict[i], h_mask_dict[i] = x, y
+            # h_dict[i], h_mask_dict[i] = self.enc_inter[i-1](x, y)
             # h_dict[i], h_mask_dict[i] = operator(h_dict[h_key_prev], h_mask_dict[h_key_prev])
             h_dict[i] = pool(h_dict[i])
             h_mask_dict[i] = pool(h_mask_dict[i])
@@ -103,7 +104,8 @@ class PConvUNet(nn.Module):
                 #nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)
             #)
             x, y = self.dec_prim[i - 1](h, h_mask)
-            h,h_mask = self.dec_inter[i - 1](x, y)
+            h, h_mask = x, y
+            # h, h_mask = self.dec_inter[i - 1](x, y)
             #h = nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)(h)
             #h_mask = nn.Upsample(scale_factor=2, mode = self.upsampling_mode, align_corners = True)(h_mask)
 
@@ -112,4 +114,7 @@ class PConvUNet(nn.Module):
 
         return h, h_mask
 
+    def train(self, mode=True):
+        # call the default class train
+        super().train(mode)
         
