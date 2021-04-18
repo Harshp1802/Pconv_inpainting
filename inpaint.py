@@ -71,28 +71,32 @@ def main():
             # Reference: https://pdfs.semanticscholar.org/622d/5f432e515da69f8f220fb92b17c8426d0427.pdf
             res = cv.inpaint(src=img_mask, inpaintMask=inpaintMask, inpaintRadius=3, flags=cv.INPAINT_TELEA)
             cv.imshow('Inpaint Output using FMM', res)
+
         if ch == ord('n'):
             # Use Algorithm proposed by Bertalmio, Marcelo, Andrea L. Bertozzi, and Guillermo Sapiro: Navier-Stokes, Fluid Dynamics, and Image and Video Inpainting (2001)
             res = cv.inpaint(src=img_mask, inpaintMask=inpaintMask, inpaintRadius=3, flags=cv.INPAINT_NS)
             cv.imshow('Inpaint Output using NS Technique', res)
-        if ch == ord('r'):
-            img_mask[:] = img
-            inpaintMask[:] = 0
-            sketch.show()
+
         if ch == ord('m'):
-            inpaintMask = np.bitwise_not(inpaintMask)
+            inpaintMask_t = np.bitwise_not(inpaintMask)
             cv.imwrite("img_mask.jpg", img_mask)
-            cv.imwrite("inpaint_mask.jpg", inpaintMask)
+            cv.imwrite("inpaint_mask.jpg", inpaintMask_t)
             #sketch.show()
             inp_image, inp_mask, gt = load_image(path=gt_img, mask_path="inpaint_mask.jpg")
 
             model = PConvUNet().to(device)
-            load_ckpt("snapshots/default/ckpt/10000.pth", [('model', model)])
+            load_ckpt("snapshots/default/ckpt/1000000.pth", [('model', model)])
 
             model.eval()
             evaluate_my(model, inp_image, inp_mask, gt)
             out_test = cv.imread("test123.jpg", cv.IMREAD_COLOR)
             cv.imshow('Inpaint Output', out_test)
+
+        if ch == ord('r'):
+            img_mask[:] = img
+            inpaintMask[:] = 0
+            sketch.show()
+
 
     print('Completed')
 
