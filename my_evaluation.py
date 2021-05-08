@@ -6,7 +6,6 @@ from util.image import unnormalize
 import opt
 from PIL import Image
 from my_unet import PConvUNet
-from net import PConvUNet
 from util.io import load_ckpt
 
 device = torch.device('cuda')
