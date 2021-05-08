@@ -13,4 +13,4 @@ def metrics(original, generated):
 
     ssim = ssim(original, generated)
 
-    return mse, psnr, ssim
+    return np.array([mse, psnr, ssim])

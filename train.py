@@ -8,7 +8,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 import opt
-from evaluation import evaluate
+from my_evaluation import evaluate_train
 from loss import InpaintingLoss
 from my_unet import PConvUNet
 from my_unet import VGG16FeatureExtractor
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
         if (i + 1) % args.vis_interval == 0:
             model.eval()
-            evaluate(model, dataset_val, device,
+            evaluate_train(model, dataset_val, device,
                     '{:s}/images/test_{:d}.jpg'.format(args.save_dir, i + 1))
 
     writer.close()
