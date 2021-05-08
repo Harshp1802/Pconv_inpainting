@@ -4,6 +4,29 @@ import torch
 import torch.nn as nn
 from my_pconv import PConv
 import torch.nn.functional as F
+from torchvision import models
+
+class VGG16FeatureExtractor(nn.Module):
+    def __init__(self):
+        super().__init__()
+        vgg16 = models.vgg16(pretrained=True)
+
+        self.enc = nn.ModuleList()
+
+        self.enc.append(nn.Sequential(*vgg16.features[:5]))
+        self.enc.append(nn.Sequential(*vgg16.features[5:10]))
+        self.enc.append(nn.Sequential(*vgg16.features[10:17]))
+
+        # fix the encoder
+        for i in range(3):
+            for param in self.enc[i].parameters():
+                param.requires_grad = False
+
+    def forward(self, image):
+        results = [image]
+        for i in range(3):
+            results.append(self.enc[i](results[-1]))
+        return results[1:]
 
 # Important formulae
 # 1) Padding should be n for kernel size of 2 * n + 1 (This is for dimension conservation)

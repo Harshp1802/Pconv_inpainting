@@ -12,7 +12,7 @@ from evaluation import evaluate
 from loss import InpaintingLoss
 from my_unet import PConvUNet
 #from net import PConvUNet
-from net import VGG16FeatureExtractor
+from my_unet import VGG16FeatureExtractor
 from places2 import Places2
 from util.io import load_ckpt
 from util.io import save_ckpt
