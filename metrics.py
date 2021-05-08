@@ -1,7 +1,7 @@
 import numpy as np
 from skimage.measure import compare_ssim as ssim
 
-def metric(original, generated):
+def metrics(original, generated):
     mse = np.mean((original - generated) ** 2)
 
     # To avoid divide by zero

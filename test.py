@@ -3,7 +3,7 @@ import torch
 from torchvision import transforms
 
 import opt
-from places2 import Places2
+from data_loader import Load_Data
 from evaluation import evaluate
 from net import PConvUNet
 from util.io import load_ckpt
@@ -24,7 +24,7 @@ img_transform = transforms.Compose(
 mask_transform = transforms.Compose(
     [transforms.Resize(size=size), transforms.ToTensor()])
 
-dataset_val = Places2(args.root, img_transform, mask_transform, 'val')
+dataset_val = Load_Data(args.root, img_transform, mask_transform, 'val')
 
 model = PConvUNet().to(device)
 load_ckpt(args.snapshot, [('model', model)])

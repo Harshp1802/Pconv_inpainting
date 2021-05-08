@@ -11,9 +11,8 @@ import opt
 from evaluation import evaluate
 from loss import InpaintingLoss
 from my_unet import PConvUNet
-#from net import PConvUNet
 from my_unet import VGG16FeatureExtractor
-from places2 import Places2
+from data_loader import Load_Data
 from util.io import load_ckpt
 from util.io import save_ckpt
 
@@ -78,8 +77,8 @@ if __name__ == '__main__':
     mask_tf = transforms.Compose(
         [transforms.Resize(size=size), transforms.ToTensor()])
 
-    dataset_train = Places2(args.root, args.mask_root, img_tf, mask_tf, 'train')
-    dataset_val = Places2(args.root, args.mask_root, img_tf, mask_tf, 'val')
+    dataset_train = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'train')
+    dataset_val = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'val')
 
     iterator_train = iter(data.DataLoader(
         dataset_train, batch_size=args.batch_size,
@@ -120,7 +119,6 @@ if __name__ == '__main__':
             if (i + 1) % args.log_interval == 0:
                 writer.add_scalar('loss_{:s}'.format(key), value.item(), i + 1)
 
-        print(loss)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()

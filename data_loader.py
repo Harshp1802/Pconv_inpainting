@@ -4,10 +4,10 @@ from PIL import Image
 from glob import glob
 
 
-class Places2(torch.utils.data.Dataset):
+class Load_Data(torch.utils.data.Dataset):
     def __init__(self, img_root, mask_root, img_transform, mask_transform,
                  split='train'):
-        super(Places2, self).__init__()
+        super(Load_Data, self).__init__()
         self.img_transform = img_transform
         self.mask_transform = mask_transform
 
