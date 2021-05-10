@@ -3,6 +3,7 @@ from skimage.measure import compare_ssim as ssim
 
 def metrics(original, generated):
     mse = np.mean((original - generated) ** 2)
+    l1 = np.sum(np.abs(original - generated))
 
     # To avoid divide by zero
     if(mse == 0):  
@@ -13,4 +14,4 @@ def metrics(original, generated):
 
     ssim = ssim(original, generated)
 
-    return np.array([mse, psnr, ssim])
+    return np.array([l1, mse, psnr, ssim])
