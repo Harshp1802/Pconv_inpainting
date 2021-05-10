@@ -12,7 +12,7 @@ class PConv(nn.Module):
         self.image_convolution = nn.Conv2d(input_channels, output_channels, kernel_size, stride, padding, dilation, bias = True)
 
         # Initialise Gaussian Weights for Image_Convolution Kernel with mean 0, standard deviation 0.02
-        torch.nn.init.normal(self.image_convolution.weight, 0.0, 0.02) 
+        torch.nn.init.normal_(self.image_convolution.weight, 0.0, 0.02) 
 
         # Create a 2D convolutional layer for the masks of the partial convolution.
         self.mask_convolution = nn.Conv2d(input_channels, output_channels, kernel_size, stride, padding, dilation, bias = False)

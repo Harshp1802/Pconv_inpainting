@@ -113,9 +113,9 @@ class PConvUNet(nn.Module):
 
             # We upsample the image using the bilinear mode
             # We upsample the mask using the nearest mode
-            h = F.interpolate(h, scale_factor=2, mode=self.upsampling_mode)
+            h = F.interpolate(h, scale_factor=2, mode=self.upsampling_mode, align_corners=False)
             h_mask = F.interpolate(
-                h_mask, scale_factor=2, mode='bilinear')
+                h_mask, scale_factor=2, mode='bilinear', align_corners=False)
             #print ("-------", i, h.shape, h_dict[enc_h_key].shape)
 
             h = torch.cat([h, h_dict[enc_h_key]], dim=1)

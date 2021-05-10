@@ -50,7 +50,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_finetune', type=float, default=5e-5)
     parser.add_argument('--max_iter', type=int, default=10000)
     parser.add_argument('--batch_size', type=int, default=3)
-    parser.add_argument('--n_threads', type=int, default=16)
+    parser.add_argument('--n_threads', type=int, default=2)
     parser.add_argument('--save_model_interval', type=int, default=5000)
     parser.add_argument('--vis_interval', type=int, default=5)
     parser.add_argument('--log_interval', type=int, default=10)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         dataset_train, batch_size=args.batch_size,
         sampler=InfiniteSampler(len(dataset_train)),
         num_workers=args.n_threads))
-    print(len(dataset_train))
+    print("Loaded Dataset: ", len(dataset_train))
     model = PConvUNet().to(device)
 
     if args.finetune:
