@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 import opt
 from my_evaluation import evaluate_train
-from loss import InpaintingLoss
+from myloss import inPaintingLoss
 from my_unet import PConvUNet
 from my_unet import VGG16FeatureExtractor
 from data_loader import Load_Data
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     start_iter = 0
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
-    criterion = InpaintingLoss(VGG16FeatureExtractor()).to(device)
+    criterion = inPaintingLoss(VGG16FeatureExtractor()).to(device)
 
     if args.resume:
         start_iter = load_ckpt(
