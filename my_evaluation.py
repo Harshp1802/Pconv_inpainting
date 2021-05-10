@@ -41,9 +41,9 @@ def evaluate_test(model, image, mask, gt):
                    unnormalize(output_comp), unnormalize(gt)), dim=0))
     #print("Hello")
     save_image(grid, "test123.jpg")
+    return output # Harsh added
 
-def load_image(path = "places2_img/2.jpg",
- mask_path = "output.png"):
+def load_image(path = "places2_img/2.jpg", mask_path = "output.png"):
     size = (256, 256)
     gt_img = Image.open(path)
     img_tf = transforms.Compose(
