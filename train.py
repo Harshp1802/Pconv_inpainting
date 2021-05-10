@@ -62,21 +62,31 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = True
     device = torch.device('cuda')
 
+
+    # Creating the folders to save images and checkpoints
     if not os.path.exists(args.save_dir):
         os.makedirs('{:s}/images'.format(args.save_dir))
         os.makedirs('{:s}/ckpt'.format(args.save_dir))
 
+    # Creating the folders to save logs
     if not os.path.exists(args.log_dir):
         os.makedirs(args.log_dir)
     writer = SummaryWriter(log_dir=args.log_dir)
 
     size = (args.image_size, args.image_size)
-    img_tf = transforms.Compose(
-        [transforms.Resize(size=size), transforms.ToTensor(),
+    
+    # Resize the image, convert to Tensor and finally normalise
+    img_tf = transforms.Compose([
+        transforms.Resize(size=size), 
+        transforms.ToTensor(),
         transforms.Normalize(mean=opt.MEAN, std=opt.STD)])
-    mask_tf = transforms.Compose(
-        [transforms.Resize(size=size), transforms.ToTensor()])
+    
+    # Resize the image, convert to Tensor
+    mask_tf = transforms.Compose([
+        transforms.Resize(size=size),
+        transforms.ToTensor()])
 
+    # Returns list of file names corresponding to the training and validation data respectively
     dataset_train = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'train')
     dataset_val = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'val')
 
