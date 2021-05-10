@@ -1,7 +1,7 @@
 import numpy as np
-import cv2 as cv
 import sys
 from my_evaluation import *
+import cv2 as cv
 
 # OpenCV Utility Class for Mouse Handling
 class Sketcher:
@@ -28,7 +28,7 @@ class Sketcher:
 
         if self.prev_pt and flags & cv.EVENT_FLAG_LBUTTON:
             for dst, color in zip(self.dests, self.colors_func()):
-                cv.line(dst, self.prev_pt, pt, color, 5)
+                cv.line(dst, self.prev_pt, pt, color, 20)
             self.dirty = True
             self.prev_pt = pt
             self.show()
@@ -50,9 +50,6 @@ def main():
     img = cv.imread(sys.argv[1], cv.IMREAD_COLOR)
     #img = cv.resize(img, (512, 512))
     # If image is not read properly, return error
-    if img is None:
-        print('Failed to load image file: {}'.format(args["image"]))
-        return
 
     # Create a copy of original image
     img_mask = img.copy()
@@ -85,10 +82,10 @@ def main():
             inp_image, inp_mask, gt = load_image(path=gt_img, mask_path="inpaint_mask.jpg")
 
             model = PConvUNet().to(device)
-            load_ckpt("snapshots/default/ckpt/1000000.pth", [('model', model)])
+            load_ckpt("snapshot/25000.pth", [('model', model)])
 
             model.eval()
-            evaluate_my(model, inp_image, inp_mask, gt)
+            evaluate_test(model, inp_image, inp_mask, gt)
             out_test = cv.imread("test123.jpg", cv.IMREAD_COLOR)
             cv.imshow('Inpaint Output', out_test)
 

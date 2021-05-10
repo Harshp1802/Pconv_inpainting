@@ -35,9 +35,8 @@ cv2.imwrite("segment_mask.jpg", output)
 inp_image, inp_mask, gt = load_image(path=input_image_path, mask_path="segment_mask.jpg")
 
 model = PConvUNet().to(device)
-load_ckpt("snapshots/default/ckpt/1000000.pth", [('model', model)])
+load_ckpt("snapshot/25000.pth", [('model', model)])
 
 model.eval()
-evaluate_my(model, inp_image, inp_mask, gt)
+evaluate_test(model, inp_image, inp_mask, gt)
 out_test = cv2.imread("test123.jpg", cv2.IMREAD_COLOR)
-#cv2.imshow('Inpaint Output', out_test)
