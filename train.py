@@ -47,7 +47,6 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, default='./snapshots/default')
     parser.add_argument('--log_dir', type=str, default='./logs/default')
     parser.add_argument('--lr', type=float, default=2e-4)
-    parser.add_argument('--lr_finetune', type=float, default=5e-5)
     parser.add_argument('--max_iter', type=int, default=10000)
     parser.add_argument('--batch_size', type=int, default=3)
     parser.add_argument('--n_threads', type=int, default=2)
@@ -56,7 +55,6 @@ if __name__ == '__main__':
     parser.add_argument('--log_interval', type=int, default=10)
     parser.add_argument('--image_size', type=int, default=256)
     parser.add_argument('--resume', type=str)
-    parser.add_argument('--finetune', action='store_true')
     args = parser.parse_args()
 
     torch.backends.cudnn.benchmark = True
@@ -90,22 +88,20 @@ if __name__ == '__main__':
     dataset_train = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'train')
     dataset_val = Load_Data(args.root, args.mask_root, img_tf, mask_tf, 'val')
 
+    # torch.utils.data.DataLoader class is PyTorch data loading utility.
+    # It represents a Python iterable over a dataset
     iterator_train = iter(data.DataLoader(
         dataset_train, batch_size=args.batch_size,
         sampler=InfiniteSampler(len(dataset_train)),
         num_workers=args.n_threads))
     print("Loaded Dataset: ", len(dataset_train))
+    
+    # Loading the model
     model = PConvUNet().to(device)
-
-    if args.finetune:
-        lr = args.lr_finetune
-        model.freeze_enc_bn = True
-    else:
-        lr = args.lr
+    lr = args.lr
 
     start_iter = 0
-    optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
     criterion = inPaintingLoss(VGG16FeatureExtractor()).to(device)
 
     if args.resume:
