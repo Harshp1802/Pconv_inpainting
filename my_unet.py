@@ -4,29 +4,6 @@ import torch
 import torch.nn as nn
 from my_pconv import PConv
 import torch.nn.functional as F
-from torchvision import models
-
-class VGG16FeatureExtractor(nn.Module):
-    def __init__(self):
-        super().__init__()
-        vgg16 = models.vgg16(pretrained=True)
-
-        self.enc = nn.ModuleList()
-
-        self.enc.append(nn.Sequential(*vgg16.features[:5]))
-        self.enc.append(nn.Sequential(*vgg16.features[5:10]))
-        self.enc.append(nn.Sequential(*vgg16.features[10:17]))
-
-        # fix the encoder
-        for i in range(3):
-            for param in self.enc[i].parameters():
-                param.requires_grad = False
-
-    def forward(self, image):
-        results = [image]
-        for i in range(3):
-            results.append(self.enc[i](results[-1]))
-        return results[1:]
 
 # Important formulae
 # 1) Padding should be n for kernel size of 2 * n + 1 (This is for dimension conservation)
@@ -41,21 +18,25 @@ class PConvUNet(nn.Module):
         self.enc_prim = nn.ModuleList()
         self.enc_inter = nn.ModuleList()
         
-        # Creating a list of all encoders
         self.num_layers = num_layers
+
+        # Creating a list of all encoders
         self.enc_prim.append(PConv(input_channels, 64, 7, 1, 3, bn=False))
-        # self.enc_inter.append(PConv(64, 64, 7, 1, 3, bn=False))
-        self.enc_prim.append(PConv(64, 128, 5, 1, 2, bn=False))
-        # self.enc_inter.append(PConv(128, 128, 5, 1, 2, bn=False))
-        self.enc_prim.append(PConv(128, 256, 5, 1, 2, bn=False))
-        # self.enc_inter.append(PConv(256, 256, 5, 1, 2, bn=False))
-        self.enc_prim.append(PConv(256, 512, 3, 1, 1, bn=False))
-        # self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
+        self.enc_inter.append(PConv(64, 64, 7, 1, 3, bn=False))
+
+        self.enc_prim.append(PConv(64, 128, 5, 1, 2, bn=True))
+        self.enc_inter.append(PConv(128, 128, 5, 1, 2, bn=True))
+
+        self.enc_prim.append(PConv(128, 256, 5, 1, 2, bn=True))
+        self.enc_inter.append(PConv(256, 256, 5, 1, 2, bn=True))
+
+        self.enc_prim.append(PConv(256, 512, 3, 1, 1, bn=True))
+        self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=True))
 
 
         for i in range(5, num_layers + 1):
-            self.enc_prim.append(PConv(512, 512, 3, 1, 1, bn=False))
-            # self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=False))
+            self.enc_prim.append(PConv(512, 512, 3, 1, 1, bn=True))
+            self.enc_inter.append(PConv(512, 512, 3, 1, 1, bn=True))
 
         # Creating a list of all decoders
         self.dec_prim = nn.ModuleList()
@@ -63,18 +44,21 @@ class PConvUNet(nn.Module):
         
         # Creating a list of all decoders
         self.dec_prim.append(PConv(64 + input_channels, input_channels, 3, 1, 1, bn=False, activ = None))
-        # self.dec_inter.append(PConv(input_channels, input_channels, 3, 1, 1, bn=False, activ = None))
-        self.dec_prim.append(PConv(128 + 64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
-        # self.dec_inter.append(PConv(64, 64, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_prim.append(PConv(256 + 128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
-        # self.dec_inter.append(PConv(128, 128, 3, 1, 1, bn=False, activ = 'leaky'))
-        self.dec_prim.append(PConv(512 + 256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
-        # self.dec_inter.append(PConv(256, 256, 3, 1, 1, bn=False, activ = 'leaky'))
+        self.dec_inter.append(PConv(input_channels, input_channels, 3, 1, 1, bn=False, activ = None))
+
+        self.dec_prim.append(PConv(128 + 64, 64, 3, 1, 1, bn=True, activ = 'leaky'))
+        self.dec_inter.append(PConv(64, 64, 3, 1, 1, bn=True, activ = 'leaky'))
+
+        self.dec_prim.append(PConv(256 + 128, 128, 3, 1, 1, bn=True, activ = 'leaky'))
+        self.dec_inter.append(PConv(128, 128, 3, 1, 1, bn=True, activ = 'leaky'))
+
+        self.dec_prim.append(PConv(512 + 256, 256, 3, 1, 1, bn=True, activ = 'leaky'))
+        self.dec_inter.append(PConv(256, 256, 3, 1, 1, bn=True, activ = 'leaky'))
 
 
         for i in range(5, num_layers + 1):
-            self.dec_prim.append(PConv(512 + 512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
-            # self.dec_inter.append(PConv(512, 512, 3, 1, 1, bn=False, activ = 'leaky'))
+            self.dec_prim.append(PConv(512 + 512, 512, 3, 1, 1, bn=True, activ = 'leaky'))
+            self.dec_inter.append(PConv(512, 512, 3, 1, 1, bn=True, activ = 'leaky'))
 
     
     def forward(self, image, mask):
@@ -111,11 +95,9 @@ class PConvUNet(nn.Module):
             enc_h_key = i - 1
             dec_l_key = i
 
-            # We upsample the image using the bilinear mode
-            # We upsample the mask using the nearest mode
+            # We upsample using the bilinear mode
             h = F.interpolate(h, scale_factor=2, mode=self.upsampling_mode, align_corners=False)
-            h_mask = F.interpolate(
-                h_mask, scale_factor=2, mode='bilinear', align_corners=False)
+            h_mask = F.interpolate(h_mask, scale_factor=2, mode='bilinear', align_corners=False)
             #print ("-------", i, h.shape, h_dict[enc_h_key].shape)
 
             h = torch.cat([h, h_dict[enc_h_key]], dim=1)
@@ -140,4 +122,3 @@ class PConvUNet(nn.Module):
     def train(self, mode=True):
         # call the default class train
         super().train(mode)
-        
