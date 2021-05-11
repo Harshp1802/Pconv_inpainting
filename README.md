@@ -90,6 +90,6 @@ Link to Dataset:
 # Code References
 - https://github.com/NVIDIA/partialconv
 - https://github.com/naoto0804/pytorch-inpainting-with-partial-conv
-- The base framework of  our code is similar to the above repository which includes Tensorboard Logging, Argument Parser, Dataset Loader and Output Visualization.
+- The base framework of our code is similar to the above repository which includes Tensorboard Logging, Argument Parser, Dataset Loader `data_loader`, basic image-io utilities: `utils` and Output Visualization.
 - https://docs.opencv.org/master/dd/d3d/tutorial_gpu_basics_similarity.html
 - For making the demo tool: Learn OpenCV, https://learnopencv.com/. https://github.com/spmallick/learnopencv/blob/master/Image-Inpainting/inpaint.py
