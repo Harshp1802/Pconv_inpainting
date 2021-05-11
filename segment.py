@@ -1,4 +1,5 @@
 import torch
+import sys
 model = torch.hub.load('pytorch/vision:v0.9.0', 'fcn_resnet101', pretrained=True)
 #model.eval()
 import numpy as np
@@ -7,6 +8,7 @@ from my_evaluation import *
 import cv2
 
 input_image_path = "places2_img/4.jpg"
+input_image_path = sys.argv[1]
 input_image = cv2.imread(input_image_path)
 preprocess = transforms.Compose([
     transforms.ToTensor(),
